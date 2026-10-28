@@ -1,0 +1,73 @@
+name: Android Build
+
+on:
+  workflow_dispatch:
+  # Para compilar automaticamente a cada envio na branch main,
+  # remova o "#" das 3 linhas abaixo:
+  # push:
+  #   branches:
+  #     - main
+
+env:
+  UNITY_VERSION: 2022.3.45f1
+
+jobs:
+  build:
+    name: Compilar APK Android
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Baixar repositório
+        uses: actions/checkout@v4
+
+      - name: Liberar espaço em disco
+        uses: jlumbroso/free-disk-space@v1.3.1
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: false
+          docker-images: false
+          swap-storage: true
+
+      - name: Cache da pasta Library
+        uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-Android-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: |
+            Library-Android-
+
+      - name: Compilar com Unity (GameCI)
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          unityVersion: ${{ env.UNITY_VERSION }}
+          targetPlatform: Android
+          androidExportType: androidPackage
+          buildName: ProjetoMoto3D
+          buildMethod: ProjetoMoto.EditorTools.BuildScript.BuildAndroid
+          allowDirtyBuild: true
+
+      - name: Publicar APK como artefato
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ProjetoMoto3D-Android-APK
+          path: build/Android
+          if-no-files-found: error
+
+      - name: Publicar logs de diagnóstico
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs-de-build
+          path: |
+            build/**/*.log
+            *.log
+          if-no-files-found: ignore

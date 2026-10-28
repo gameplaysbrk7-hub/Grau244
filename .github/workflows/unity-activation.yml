@@ -1,0 +1,23 @@
+name: Pedir arquivo de ativação Unity
+
+# Use somente se precisar gerar o arquivo .alf para ativar a licença Personal.
+# Veja a seção "Licença da Unity" do README.md.
+on:
+  workflow_dispatch:
+
+jobs:
+  activation:
+    name: Gerar arquivo de ativação
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pedir arquivo de ativação
+        id: getManualLicenseFile
+        uses: game-ci/unity-request-activation-file@v2
+        with:
+          unityVersion: 2022.3.45f1
+
+      - name: Publicar arquivo .alf
+        uses: actions/upload-artifact@v4
+        with:
+          name: Unity-ArquivoDeAtivacao
+          path: ${{ steps.getManualLicenseFile.outputs.filePath }}
