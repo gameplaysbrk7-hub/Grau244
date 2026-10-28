@@ -139,7 +139,7 @@ class GameView(context: Context, private val store: Store) : SurfaceView(context
             }
             val c = try { holder.lockCanvas() } catch (e: Exception) { null }
             if (c != null) {
-                try { synchronized(lock) { draw(c) } } finally { holder.unlockCanvasAndPost(c) }
+                try { synchronized(lock) { drawFrame(c) } } finally { holder.unlockCanvasAndPost(c) }
             }
             val spent = (System.nanoTime() - now) / 1_000_000
             if (spent < 14) try { Thread.sleep(14 - spent) } catch (_: InterruptedException) {}
@@ -275,7 +275,7 @@ class GameView(context: Context, private val store: Store) : SurfaceView(context
     }
 
     // ---------- desenho ----------
-    private fun draw(c: Canvas) {
+    private fun drawFrame(c: Canvas) {
         buttons = ArrayList()
         when (screen) {
             Screen.MENU -> { drawWorld(c, menuDist, null); drawMenu(c) }
